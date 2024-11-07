@@ -1,0 +1,55 @@
+********************************************************
+********************************************************
+*rectangular window, transformation
+********************************************************
+********************************************************
+.subckt GEM gate drain source XSV params:
++ alphaoff=3 alphaon=3 voff=-0.8 von=0.8 koff=-1 kon=1 kd=3 bd=0 vgsmaxp=10 vgsmaxn=-10 kgs=0.2 bgs=0
++ Roff=10k Ron=2k woff=0 won=1 wini=0.5
+
+*resistive port
+.param xini={(wini-won)/(woff-won)}
+*c represents the drain-source voltage, d represents the state of this memristive transistor
+*rcal is the resistance of the memristive transistor
+*here, compare the drain-source voltage with the threshold voltage and calculate the resistance based on the working state of this transistor (linear or saturation)
+*when ds voltage is smaller than the threshold voltage(kd*d+bd), the transistor is in the linear region Note: here the kd is positive, demonstrating that when the device is more approaching to the low-resistance state, the device is harder to staurate. 
+.func rcal(c,d)={c/(Roff+(Ron-Roff)*d)*aLTb(c,kd*d+bd)+(1-aLTb(c,kd*d+bd))*((kd*d+bd)/(Roff+(Ron-Roff)*d))}
+Gmem drain source value={rcal(V(drain,source),V(XSV))}
+*end of resistive port
+
+*state equation
+.param norm=1
+.param koffn={norm*koff/(won-woff)}
+.param konn={norm*kon/(won-woff)}
+.func aLTb(a,b)={IF(a<b,1,0)}
+.func aGTb(a,b)={IF(a>b,1,0)}
+Ggplus 0 G value={konn*(V(gate,source)/von-1)**alphaon*aGTb(V(gate,source),von)}
+Ggminus 0 G value={koffn*(V(gate,source)/voff-1)**alphaoff*aLTb(V(gate,source),voff)}
+
+.func Tp(x)={kgs*(1-x/vgsmaxp)+bgs}
+.func Tn(x)={kgs*(1-x/vgsmaxn)+bgs}
+.nodeset V(internal_node) = 0
+Elink internal_node 0 gate source 1
+
+Raux G 0 1G
+Cint G 0 {norm} IC={0}
+
+* xdiode1 G high idealdiode
+* vhigh high 0 {0.5-F(xini)}
+* xdiode2 low G idealdiode
+* vlow low 0 {-0.5-F(xini)}
+
+xdiode3 G highh idealdiode
+xdiode4 loww G idealdiode
+Bhighh highh 0 V = aGTb(V(internal_node),0.5 - Tp(V(internal_node))-F(xini))*(0.5 - Tp(V(internal_node))-F(xini))+(1-aGTb(V(internal_node),0.5 - Tp(V(internal_node))-F(xini)))*(0.5-F(xini))
+Bloww  loww  0 V = aLTb(V(internal_node),-0.5 + Tn(V(internal_node))-F(xini))*(-0.5 + Tn(V(internal_node))-F(xini))+(1-aLTb(V(internal_node),-0.5 + Tn(V(internal_node))-F(xini)))*(-0.5-F(xini))
+
+* G to x conversion
+Ex XSV 0 value={FI(V(G)+F(xini))}
+
+*Rectangular window
+.func FI(x)={TABLE(x,-0.5, 0, 0.5,1)}
+
+.func F(x)={TABLE(x,0, -0.5, 1,0.5)}
+
+.ends GEM

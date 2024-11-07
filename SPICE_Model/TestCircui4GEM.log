@@ -1,0 +1,23 @@
+Circuit: * D:\shengbo_wang\OneDrive\legion2503\503lab\AM\submit\code\TestCircui4GEM.asc
+
+Direct Newton iteration for .op point succeeded.
+Ignoring empty pin current: Ix(u1:gate)
+Ignoring empty pin current: Ix(u1:gate)
+
+Date: Thu Nov 07 15:05:01 2024
+Total elapsed time: 0.224 seconds.
+
+tnom = 27
+temp = 27
+method = modified trap
+totiter = 7255
+traniter = 7105
+tranpoints = 3443
+accept = 2855
+rejected = 588
+matrix size = 31
+fillins = 6
+solver = Alternate
+Matrix Compiler1: 1.87 KB object code size  0.4/0.3/[0.2]
+Matrix Compiler2: 3.06 KB object code size  0.4/0.4/[0.3]
+
